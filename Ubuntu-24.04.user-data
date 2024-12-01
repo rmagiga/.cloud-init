@@ -1,0 +1,45 @@
+#cloud-config
+apt:
+  primary:
+    - arches: [i386, amd64]
+      uri: http://ftp.udx.icscoe.jp/Linux/ubuntu
+  security:
+    - arches: [i386, amd64]
+      uri: http://security.ubuntu.com/ubuntu
+
+timezone: Asia/Tokyo
+locale: ja_JP.UTF-8
+
+package_update: true
+package_upgrade: true
+
+groups:
+  - wsl-users
+
+users:
+- name: ubuntu
+  uid: 1000
+  groups: adm,dialout,cdrom,floppy,sudo,audio,dip,video,plugdev,netdev,wsl-users
+  sudo: ALL=(ALL) NOPASSWD:ALL
+  shell: /bin/bash
+  lock_passwd: true
+
+packages:
+  - language-pack-ja
+  - fonts-noto-cjk
+  - fonts-noto-cjk-extra
+  - util-linux-extra
+
+write_files:
+- path: /etc/wsl.conf
+  append: true
+  content: |
+    command=hwclock -s
+
+    [user]
+    default=ubuntu
+- path: /home/ubuntu/.hushlogin
+  content: ""
+
+runcmd:
+  - 'groupmod -g 1000 wsl-users'
