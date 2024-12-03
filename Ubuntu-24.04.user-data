@@ -27,9 +27,15 @@ users:
 # パッケージインストール
 packages:
   - language-pack-ja
+  - util-linux-extra
+  - task-japanese-gnome-desktop
+  - language-pack-gnome-ja-base
+  - language-pack-gnome-ja
+  - gnome-user-docs-ja
   - fonts-noto-cjk
   - fonts-noto-cjk-extra
-  - util-linux-extra
+  - fcitx5-mozc
+  - mesa-utils
 # wsl.conf: 起動時の時刻合わせ。デフォルトユーザーをubuntuへ。
 # .hushlogin: 起動時の.hushloginの抑制
 write_files:
@@ -45,6 +51,19 @@ write_files:
   owner: ubuntu:ubuntu
   permissions: '0644'
   defer: true
+- path: /home/ubuntu/.profile
+  append: true
+  content: |
+    export GTK_IM_MODULE=fcitx5
+    export QT_IM_MODULE=fcitx5
+    export XMODIFIERS=@im=fcitx5
+    export INPUT_METHOD=fcitx5
+    export DefaultIMModule=fcitx5
+    if [ $SHLVL = 1 ] ; then
+      (fcitx5 --disable=wayland -d --verbose '*'=0 &)
+    fi
+    export LIBGL_ALWAYS_SOFTWARE=1
+  defer: true
 # .bashrcなどが作られなかったのでコピーしたが、なぜか作られた。
 ##- path: /home/ubuntu/.bashrc
 ##  source:
@@ -52,6 +71,9 @@ write_files:
 ##  owner: ubuntu:ubuntu
 ##  permissions: '0644'
 ##  defer: true
-
+keyboard:
+  layout: jp
+  model: jp106
 runcmd:
-  - 'groupmod -g 1000 wsl-users'
+  - groupmod -g 1000 wsl-users
+##  - sudo -u ubuntu im-config -n fcitx5
