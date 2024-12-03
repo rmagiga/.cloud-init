@@ -1,4 +1,5 @@
 #cloud-config
+# パッケージリポジトリ設定
 apt:
   primary:
     - arches: [i386, amd64]
@@ -6,16 +7,16 @@ apt:
   security:
     - arches: [i386, amd64]
       uri: http://security.ubuntu.com/ubuntu
-
+# タイムゾーンとlocale設定
 timezone: Asia/Tokyo
 locale: ja_JP.UTF-8
-
+# apt update && apt upgrade
 package_update: true
 package_upgrade: true
-
+# wsl-usersグループ作成
 groups:
   - wsl-users
-
+#ubuntu ユーザー作成。グループ指定。パスワードなし。sudoパスワードなし。
 users:
 - name: ubuntu
   uid: 1000
@@ -23,13 +24,14 @@ users:
   sudo: ALL=(ALL) NOPASSWD:ALL
   shell: /bin/bash
   lock_passwd: true
-
+# パッケージインストール
 packages:
   - language-pack-ja
   - fonts-noto-cjk
   - fonts-noto-cjk-extra
   - util-linux-extra
-
+# wsl.conf: 起動時の時刻合わせ。デフォルトユーザーをubuntuへ。
+# .hushlogin: 起動時の.hushloginの抑制
 write_files:
 - path: /etc/wsl.conf
   append: true
@@ -40,6 +42,16 @@ write_files:
     default=ubuntu
 - path: /home/ubuntu/.hushlogin
   content: ""
+  owner: ubuntu:ubuntu
+  permissions: '0644'
+  defer: true
+# .bashrcなどが作られなかったのでコピーしたが、なぜか作られた。
+##- path: /home/ubuntu/.bashrc
+##  source:
+##    uri: file:///etc/skel/.bashrc
+##  owner: ubuntu:ubuntu
+##  permissions: '0644'
+##  defer: true
 
 runcmd:
   - 'groupmod -g 1000 wsl-users'
