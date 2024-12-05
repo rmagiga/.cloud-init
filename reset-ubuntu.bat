@@ -6,5 +6,4 @@ ubuntu2404.exe install --root
 ubuntu2404.exe run cloud-init status --wait
 
 wsl -t Ubuntu-24.04
-rem wsl -d Ubuntu-24.04
 ubuntu2404.exe

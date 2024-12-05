@@ -28,10 +28,6 @@ users:
 packages:
   - language-pack-ja
   - util-linux-extra
-  - task-japanese-gnome-desktop
-  - language-pack-gnome-ja-base
-  - language-pack-gnome-ja
-  - gnome-user-docs-ja
   - fonts-noto-cjk
   - fonts-noto-cjk-extra
   - fcitx5-mozc
@@ -64,16 +60,9 @@ write_files:
     fi
     export LIBGL_ALWAYS_SOFTWARE=1
   defer: true
-# .bashrcなどが作られなかったのでコピーしたが、なぜか作られた。
-##- path: /home/ubuntu/.bashrc
-##  source:
-##    uri: file:///etc/skel/.bashrc
-##  owner: ubuntu:ubuntu
-##  permissions: '0644'
-##  defer: true
 keyboard:
   layout: jp
   model: jp106
 runcmd:
   - groupmod -g 1000 wsl-users
-##  - sudo -u ubuntu im-config -n fcitx5
+  - sudo -u ubuntu im-config -n fcitx5
