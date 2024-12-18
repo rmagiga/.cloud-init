@@ -168,3 +168,15 @@ gnome-text-editor
 ```sh
 sudo apt install -y task-japanese-gnome-desktop language-pack-gnome-ja-base language-pack-gnome-ja gnome-user-docs-ja
 ```
+
+### Git設定の共通化
+
+Windows11とWSLの.gitconfigを共通に使用する。
+WSL上のUbuntuから実行します。
+
+```
+ln -s /mnt/c/Users/$(whoami.exe | awk -F'\' '{print $2}')/.gitconfig ~/.gitconfig
+```
+
+解説
+Windowsの実行ユーザーをwhoami.exeから取得して加工します。そのディレクトリパスを使って、シンボリックリンクを張り、設定を共通化できます。
