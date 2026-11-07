@@ -36,8 +36,9 @@ packages:
 # .hushlogin: 起動時の.hushloginの抑制
 write_files:
 - path: /etc/wsl.conf
-  append: true
   content: |
+    [boot]
+    systemd=true
     command=hwclock -s
 
     [user]
