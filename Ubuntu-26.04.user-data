@@ -34,6 +34,7 @@ packages:
   - mesa-utils
   - ubuntu-insights-   # システム利用レポート削除
   - ubuntu-report-     # システム利用レポート削除
+  - thunderbird-       # エディタの日本語対応時にsnapdが失敗したので、thunderbird(メールソフト)削除
 # wsl.conf: 起動時の時刻合わせ。デフォルトユーザーをubuntuへ。
 # .hushlogin: 起動時の.hushloginの抑制
 write_files:
