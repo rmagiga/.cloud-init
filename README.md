@@ -1,182 +1,139 @@
-# WSL上のUbuntu 24.04をCloud-initで自動構築する
+# WSL上のUbuntuをCloud-initで自動構築する
 
-## 概要
+WSL (Windows Subsystem for Linux) 上の Ubuntu 環境を、**cloud-init** を用いて初期セットアップ（日本語化、ユーザー設定、GUI/日本語入力環境など）まで全自動で構築・再構築するスクリプトです。
 
-このプロジェクトは、WSLにUbuntu 24.04をインストールして、できるだけ設定を自動化させることが目的です。  
-実行することで、ユーザー・グループ追加、タイムゾーン、ロケール、
-WSLgによって、Linux GUIアプリケーションを実行できるようになります。  
-構築は、cloud-initで行います。
+> [!WARNING]
+> **既存のWSL環境のリセットについて**  
+> 本スクリプトを実行すると、同名の既存の WSL Ubuntu ディストリビューションは**完全に削除（初期化）**されます。必要なデータがある場合は、事前にバックアップを取ってから実行してください。
 
-## 環境
+---
 
-- Windows 11 24H2
+## ✨ 自動化される内容
 
-WSLのバージョン(2024/12/05時点)
-```
->wsl --version
-WSL バージョン: 2.3.26.0
-カーネル バージョン: 5.15.167.4-1
-WSLg バージョン: 1.0.65
-MSRDC バージョン: 1.2.5620
-Direct3D バージョン: 1.611.1-81528511
-DXCore バージョン: 10.0.26100.1-240331-1435.ge-release
-Windows バージョン: 10.0.26100.2454
-```
+本スクリプトを実行するだけで、以下のセットアップが完了した状態で立ち上がります。
 
-## 自動化する内容
+- **OS・パッケージ**: パッケージリストの更新・最新化
+- **日本語化**: タイムゾーン（`Asia/Tokyo`）およびロケール（`ja_JP.UTF-8`）の設定
+- **ユーザー設定**: 一般ユーザー（`ubuntu`）およびグループの作成・sudo権限付与・デフォルトログイン設定
+- **時刻同期**: 起動時の時刻合わせ設定
+- **日本語入力・フォント**:
+  - `fcitx5` + `fcitx5-mozc` のインストールと環境変数設定
+  - 日本語フォント（`fonts-noto-cjk`）の追加
+- **エラー抑制**:
+  - `~/.hushlogin` によるログインメッセージの整理
+  - GNOME系アプリ起動時の Mesa/GL 関連エラー抑制設定
 
-- パッケージの最新化
-- タイムゾーン、ロケールを日本へ
-- ユーザー(ubuntu)、グループ(wsl-users)の追加と設定(uid: 1000、gid: 1000)、デフォルトユーザー設定
-- 起動時の時刻あわせ設定
-- インプットメソッドのインストールと一部設定(fcitx5とmozc)
-- Notoフォント追加
-- ログイン、および、gnome-text-editoのエラー抑制
+---
 
-## ファイル
+## 📋 動作確認環境
 
-```
-.cloud-init
-  |-  README.md
-  |-  reset-ubuntu.bat
-  |-  Ubuntu-24.04.user-data
-```
+- **OS**: Windows 11 (24H2 推奨)
+- **WSL**: WSL 2 / WSLg 対応バージョン
+  ```text
+  WSL バージョン: 3.0.x 以上
+  WSLg バージョン: 1.0.x 以上
+  ```
 
-- reset-ubuntu.bat
-  - Ubuntu 24.04の自動構築プログラム
-  - WSLにUbuntu 24.04の登録と解除、自動構築
-- Ubuntu-24.04.user-data
-  - cloud-initのユーザーデータ
-  - cloud-initで自動構築するための設定ファイル
+---
 
-## 実行方法
+## 🚀 クイックスタート
 
-```
-> cd %USERPROFILE%
-> git clone https://github.com/rmagiga/.cloud-init.git
-> cd .cloud-init
-> .\reset-ubuntu.bat
+Windows の PowerShell または コマンドプロンプト を起動して実行します。
+
+### 1. リポジトリのクローン
+```bat
+cd %USERPROFILE%
+git clone https://github.com/rmagiga/.cloud-init.git
+cd .cloud-init
 ```
 
-## 詳細
+### 2. 構築スクリプトの実行
 
-構築は、cloud-initで行います。
-cloud-initは、クロスプラットフォームのクラウドインスタンスの初期化のためのツールです。  
-もともとは、AWSのEC2の初期化のために作られたそうですが、クラウド全般に使えるようになり、今回は、WSLでの自動構築に使用します。
-systemd上で、初回起動時の1回のみ実行されます。
+利用したいバージョンに応じて、以下のいずれかのコマンドを実行します。
 
-内容については、[cloud-initドキュメント](https://cloudinit.readthedocs.io/en/latest/index.html) を参照してください。
+- **Ubuntu 24.04 LTS を構築する場合（デフォルト）**:
+  ```bat
+  .\reset-ubuntu.bat 24.04
+  rem またはショートカット: .\reset-ubuntu2404.bat
+  ```
 
-### Ubuntu-24.04.user-data
+- **Ubuntu 26.04 を構築する場合**:
+  ```bat
+  .\reset-ubuntu.bat 26.04
+  rem またはショートカット: .\reset-ubuntu2604.bat
+  ```
 
-- api
-  - パッケージのリポジトリを設定します。
-- timezone
-  - タイムゾーンの設定
-- locale
-  - ロケールの設定
-- package_update と package_upgrade
-  - パッケージの最新化
-- groups
-  - グループの追加
-- users
-  - ユーザーの追加
-- package
-  - 追加パッケージ
-- write_files
-  - ファイル操作
-- keyboard
-  - キーボード設定
-- runcmd
-  - 構築後のコマンド実行
+※ 実行後、WSLの登録解除 → 新規インストール → cloud-init によるプロビジョニングが自動で行われ、完了すると自動的にログインされます。
 
+---
 
-#### ログインエラーの抑制
-```
-- path: /home/ubuntu/.hushlogin
-  content: ""
-  owner: ubuntu:ubuntu
-  permissions: '0644'
-  defer: true
-```
+## 🛠️ 構築後の初期設定・確認
 
-#### gnome text editorの起動時に出るエラー対応
+構築完了後、WSL（Ubuntu）ターミナル内で以下の設定・確認を行います。
 
-エラー内容
-```
-MESA: error: ZINK: failed to choose pdev
-libEGL warning: egl: failed to create dri2 screen
-MESA: error: ZINK: failed to choose pdev
-glx: failed to create drisw screen
+### 1. 日本語入力（fcitx5）の初期設定
+GUI 設定ツールを起動して、入力メソッドの並びを整えます。
 
-(gnome-text-editor:520): GLib-GIO-CRITICAL **: 22:31:27.187: g_file_new_for_path: assertion 'path != NULL' failed
-
-(gnome-text-editor:520): editor-document-WARNING **: 22:31:27.187: Your system has an improperly configured XDG_DOCUMENTS_DIR. Using $HOME instead.
-```
-
-対応：Mesa 3Dのlibglをソフトウェアレンダリングに設定
-```
-export LIBGL_ALWAYS_SOFTWARE=1
-```
-
-### reset-ubuntu.bat
-
-WSL上のUbuntu 24.04の操作をします。
-
-- Ubuntu 24.04をアンインストール
-- Ubuntu 24.04をログインせずに、インストール
-- Ubuntu 24.04をrootで起動して、cloud-initの実行
-- cloud-initの実行を待機
-- Ubuntu 24.04のシャットダウン
-- Ubuntu 24.04へログイン
-
-## WSLgの確認
-
-### インプットメソッドの設定
-
-fcitx5の設定は、GUIから行ったほうが、簡単なので、それを行います。
-> 行わなくても、Mozcの設定がされていないだけなので、使用は可能です。
-
-fcitx5-configtoolを実行します。
-```sh
+```bash
 fcitx5-configtool
 ```
-実行すると、Fcitxの設定が可能になります。
-現在の入力メソッドで、「キーボード-英語(US)」があるので、選択して、削除(→のアイコンを選択)します。
-OKボタンを押下して、保存します。
+1. 設定画面が開いたら、「現在の入力メソッド」一覧を確認します。
+2. もし `キーボード - 英語 (US)` が不要な場合は選択して削除（`>` ボタン）し、`キーボード - 日本語` と `Mozc` が含まれるようにします。
+3. 「適用」または「OK」をクリックして保存します。
 
-保存すると、「~/.config/」配下に、fcitx5の設定が追加されます。
+### 2. GUI アプリ（WSLg）の動作確認
+GNOME テキストエディタをインストールして起動テストを行います。
 
-### エディタ
-
-GNOME標準のGnome Text Editorを使ってみます。
-エディタを起動して、Ctrl + Spaceで半角/全角の変換をします。
-
-エディタのインストールシェル
-```sh
+```bash
 sudo apt install -y gnome-text-editor
-```
-
-起動コマンド
-```sh
 gnome-text-editor
 ```
+- エディタが立ち上がったら、`Ctrl + Space`（または半角/全角キー）で日本語入力ができるか確認してください。
 
-メニューの日本語化をする場合は、以下のようにインストールしてください。  
-> ただし、実行すると、エディタの起動が遅くなり、1,2分ぐらい待つことになります。
-> インストールしなくても動くので(英語メニュー)、確認だけなら実行しなくてOKです。
-```sh
-sudo apt install -y task-japanese-gnome-desktop language-pack-gnome-ja-base language-pack-gnome-ja gnome-user-docs-ja
+> [!NOTE]
+> メニューを日本語化したい場合は追加パッケージをインストールできますが、初回起動に少し時間がかかる場合があります。
+> ```bash
+> sudo apt install -y task-japanese-gnome-desktop language-pack-gnome-ja
+> ```
+
+### 3. [Tips] Windows側の `.gitconfig` を共有する
+Windows 側で設定済みの Git 設定を WSL 側でもそのまま使いたい場合は、シンボリックリンクを作成します。
+
+```bash
+ln -s "/mnt/c/Users/$(whoami.exe | tr -d '\r' | awk -F'\\' '{print $2}')/.gitconfig" ~/.gitconfig
 ```
 
-### Git設定の共通化
+---
 
-Windows11とWSLの.gitconfigを共通に使用する。
-WSL上のUbuntuから実行します。
+## 📂 ファイル構成
 
+```text
+.cloud-init
+  ├── README.md               # 本ドキュメント
+  ├── reset-ubuntu.bat        # 自動構築のメインスクリプト（引数: バージョン）
+  ├── reset-ubuntu2404.bat    # 24.04 構築用ショートカット
+  ├── reset-ubuntu2604.bat    # 26.04 構築用ショートカット
+  ├── Ubuntu-24.04.user-data  # 24.04 用 cloud-init 定義ファイル
+  └── Ubuntu-26.04.user-data  # 26.04 用 cloud-init 定義ファイル
 ```
-ln -s /mnt/c/Users/$(whoami.exe | awk -F'\' '{print $2}')/.gitconfig ~/.gitconfig
-```
 
-解説
-Windowsの実行ユーザーをwhoami.exeから取得して加工します。そのディレクトリパスを使って、シンボリックリンクを張り、設定を共通化できます。
+---
+
+## 🔍 技術詳細 & カスタマイズ
+
+本環境では、クラウドインスタンスの初期化標準である **cloud-init** を WSL の `/etc/cloud/cloud.cfg.d/` に流し込み、systemd 経由で初回起動時に一括適用しています。
+
+### `*.user-data` の主な定義内容
+- `apt`: ミラーリポジトリの設定
+- `timezone` / `locale`: 日本時間・日本語化
+- `package_update` / `package_upgrade`: パッケージ最新化
+- `users` / `groups`: ユーザー `ubuntu` (UID 1000) の追加と sudo 権限付与
+- `packages`: `fcitx5`, `fonts-noto-cjk`, 各種ビルドツールの導入
+- `write_files`: 環境変数 (`/etc/environment.d/`) や `.hushlogin` の配置
+- `runcmd`: 起動直後のワンショットコマンド実行
+
+### トラブルシューティング & 設定のポイント
+- **ログインメッセージの抑制**:  
+  `~/.hushlogin` を作成することで、Ubuntu ログイン時に表示される長文バナーを非表示にしています。
+- **Mesa 3D レンダリングエラー対応**:  
+  WSLg 上で GNOME アプリを起動する際に発生しやすい GL/Zink 関連のエラーを回避するため、環境変数 `LIBGL_ALWAYS_SOFTWARE=1` を設定しています。

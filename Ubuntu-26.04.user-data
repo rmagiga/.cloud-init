@@ -1,0 +1,71 @@
+#cloud-config
+# パッケージリポジトリ設定
+apt:
+  primary:
+    - arches: [i386, amd64]
+      uri: http://ftp.udx.icscoe.jp/Linux/ubuntu
+  security:
+    - arches: [i386, amd64]
+      uri: http://security.ubuntu.com/ubuntu
+# タイムゾーンとlocale設定
+timezone: Asia/Tokyo
+locale: ja_JP.UTF-8
+# apt update && apt upgrade
+package_update: true
+package_upgrade: true
+# wsl-usersグループ作成
+groups:
+  - wsl-users
+#ubuntu ユーザー作成。グループ指定。パスワードなし。sudoパスワードなし。
+users:
+- name: ubuntu
+  uid: 1000
+  groups: adm,dialout,cdrom,floppy,sudo,audio,dip,video,plugdev,netdev,wsl-users
+  sudo: ALL=(ALL) NOPASSWD:ALL
+  shell: /bin/bash
+  lock_passwd: true
+# パッケージインストール
+packages:
+  - language-pack-ja
+  - util-linux-extra
+  - fonts-noto-cjk
+  - fonts-noto-cjk-extra
+  - fcitx5-mozc
+  - mesa-utils
+  - ubuntu-insights-   # システム利用レポート削除
+  - ubuntu-report-     # システム利用レポート削除
+# wsl.conf: 起動時の時刻合わせ。デフォルトユーザーをubuntuへ。
+# .hushlogin: 起動時の.hushloginの抑制
+write_files:
+- path: /etc/wsl.conf
+  content: |
+    [boot]
+    systemd=true
+    command=hwclock -s
+
+    [user]
+    default=ubuntu
+- path: /home/ubuntu/.hushlogin
+  content: ""
+  owner: ubuntu:ubuntu
+  permissions: '0644'
+  defer: true
+- path: /home/ubuntu/.profile
+  append: true
+  content: |
+    export GTK_IM_MODULE=fcitx5
+    export QT_IM_MODULE=fcitx5
+    export XMODIFIERS=@im=fcitx5
+    export INPUT_METHOD=fcitx5
+    export DefaultIMModule=fcitx5
+    if [ $SHLVL = 1 ] ; then
+      (fcitx5 --disable=wayland -d --verbose '*'=0 &)
+    fi
+    export LIBGL_ALWAYS_SOFTWARE=1
+  defer: true
+keyboard:
+  layout: jp
+  model: jp106
+runcmd:
+  - groupmod -g 1000 wsl-users
+  - sudo -u ubuntu im-config -n fcitx5
