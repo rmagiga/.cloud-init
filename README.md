@@ -1,6 +1,6 @@
 # WSL上のUbuntuをCloud-initで自動構築する
 
-WSL (Windows Subsystem for Linux) 上の Ubuntu 環境を、**cloud-init** を用いて初期セットアップ（日本語化、ユーザー設定、GUI/日本語入力環境など）まで全自動で構築・再構築するスクリプトです。
+WSL (Windows Subsystem for Linux) 上の Ubuntu 環境を、**cloud-init** を用いて初期セットアップ（日本語化、ユーザー設定、GUI/日本語入力環境など）まで全自動で構築・再構築するスターターキットです。
 
 > [!WARNING]
 > **既存のWSL環境のリセットについて**  
@@ -43,8 +43,8 @@ Windows の PowerShell または コマンドプロンプト を起動して実�
 ### 1. リポジトリのクローン
 ```bat
 cd %USERPROFILE%
-git clone https://github.com/rmagiga/.cloud-init.git
-cd .cloud-init
+git clone https://github.com/rmagiga/wsl-ubuntu-starter-jp.git
+cd wsl-ubuntu-starter-jp
 ```
 
 ### 2. 構築スクリプトの実行
@@ -108,7 +108,7 @@ ln -s "/mnt/c/Users/$(whoami.exe | tr -d '\r' | awk -F'\\' '{print $2}')/.gitcon
 ## 📂 ファイル構成
 
 ```text
-.cloud-init
+wsl-ubuntu-starter-jp
   ├── README.md               # 本ドキュメント
   ├── reset-ubuntu.bat        # 自動構築のメインスクリプト（引数: バージョン）
   ├── reset-ubuntu2404.bat    # 24.04 構築用ショートカット
